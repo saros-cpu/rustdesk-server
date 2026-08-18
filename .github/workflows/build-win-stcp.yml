@@ -12,6 +12,13 @@ jobs:
         shell: bash
         run: |
           git clone --depth 1 --branch stcp https://github.com/IamTaoChen/rustdesk-server.git .
+      - name: Patch hbb_common winapi features (add sysinfoapi)
+        shell: bash
+        run: |
+          sed -i 's/"memoryapi"\]/"memoryapi", "sysinfoapi"]/' libs/hbb_common/Cargo.toml
+          grep -q 'sysinfoapi' libs/hbb_common/Cargo.toml || { echo "PATCH FAILED"; exit 1; }
+          echo "patch ok:"
+          grep -n 'winapi' libs/hbb_common/Cargo.toml
       - name: Install Rust 1.85.0 (x86_64-pc-windows-msvc)
         uses: dtolnay/rust-toolchain@master
         with:
