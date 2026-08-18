@@ -5,19 +5,32 @@ jobs:
   build-win:
     name: Build hbbs/hbbr (Windows, STCP)
     runs-on: windows-2022
+    env:
+      RUST_BACKTRACE: 1
     steps:
       - name: Clone upstream stcp branch
         shell: bash
         run: |
           git clone --depth 1 --branch stcp https://github.com/IamTaoChen/rustdesk-server.git .
-      - name: Install Rust 1.70.0 (x86_64-pc-windows-msvc)
+      - name: Install Rust 1.85.0 (x86_64-pc-windows-msvc)
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: '1.70.0'
+          toolchain: '1.85.0'
           targets: x86_64-pc-windows-msvc
       - name: Build hbbs / hbbr / rustdesk-utils
-        run: cargo build --release --all-features --target x86_64-pc-windows-msvc
         shell: bash
+        run: |
+          set -o pipefail
+          cargo build --release --all-features --target x86_64-pc-windows-msvc 2>&1 | tee /tmp/build.log
+      - name: Report build error as annotation (for AI diagnostics)
+        if: failure()
+        shell: bash
+        run: |
+          {
+            echo -n "::error::"
+            tail -c 4000 /tmp/build.log | tr -d '\r' | sed 's/%/%25/g' | tr '\n' '%0A'
+            echo
+          }
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
