@@ -8,6 +8,8 @@ jobs:
     steps:
       - name: Checkout (stcp branch)
         uses: actions/checkout@v4
+        with:
+          ref: stcp
       - name: Install Rust 1.70.0 (x86_64-pc-windows-msvc)
         uses: dtolnay/rust-toolchain@master
         with:
